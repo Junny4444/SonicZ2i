@@ -1,0 +1,89 @@
+;Sonic Wind Air (j.236236P)
+[StateDef 2000]   
+type = A         
+movetype = A      
+physics = N       
+anim = 2000          
+ctrl = 0 
+velset = 0,0   
+poweradd = -1000      
+
+
+[State 3000, superpause]
+type = superpause
+trigger1 = AnimElem = 3
+time = 40
+p2defmul = 1
+unhittable = 1
+anim = -1
+sound = s2000,0
+darken = 0
+movetime = 40
+
+[State 2500, bgpalfx1]
+type = bgpalfx
+trigger1 = AnimElem = 3
+time = 40
+color=0
+mul=0,0,0
+
+[State 0, Super FX]
+type = Explod
+trigger1 = AnimElem = 3
+anim = 2003
+id = 2003
+pos = 0,-45    ;-145,52
+postype = p1
+supermovetime = 9999
+pausemovetime = 9999
+supermove = 1
+removetime = -2
+sprpriority = 8
+ownpal = 1
+bindtime = 1
+scale = 1,1
+persistent = 0
+
+[State 1000, lkb]
+type = Helper
+helpertype = normal
+trigger1 = AnimElem = 4
+name = "SonicWind"
+postype = P1
+pos = 0,0
+ownpal = 1
+size.xscale = .65
+size.yscale = .75
+stateno = 1800
+id = 1800
+
+[State 0, ChangeState]
+type = ChangeState
+trigger1 = time > 120
+value = 1610
+ctrl = 0
+;anim =
+;ignorehitpause = 
+;persistent = 
+
+
+;Sonic Wind Ground to Air Transition (236236P)
+[StateDef 2001]   
+type = S          ; SCA
+movetype = I      ; AIHU
+physics = N       ; SCANU
+anim = 41          ;refers to the .Air file
+velset = 2.5,-5      
+ctrl =  0          ;
+
+
+[State 0, ChangeState]
+type = ChangeState
+trigger1 = Time = 5
+value = 2000
+ctrl = 0
+ignorehitpause = 1
+;persistent = 
+
+
+
