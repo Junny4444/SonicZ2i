@@ -10,13 +10,13 @@ He has sprites by Seanalty (+ More) and almost everything one would expect for a
 # Screenshots
 
 
-!(Git_assets/Shot4.png)
+![](Git_assets/Shot4.png)
 
-!(Git_assets/Shot3.png)
+![](Git_assets/Shot3.png)
 
-!(Git_assets/Shot2.png)
+![](Git_assets/Shot2.png)
 
-!(Git_assets/Shot1.png)
+![](Git_assets/Shot1.png)
 
 
 
