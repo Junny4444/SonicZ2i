@@ -6,13 +6,85 @@
 [Info]
 name = "Sonic Z2i"
 displayname = "Sonic"
-versiondate = 07,14,2013
+versiondate = 07,14,2013 ;Started development late September 2024
 mugenversion = 1.0
-author = "Team Z2" ;Junny is author, Yoshin helped me a lot with stuff
+author = "Team Z2" ;Junny is author, Yoshin helped me a lot with some code snippets
 ;Team Z2 is for compatability
 ;Credits to Hypersonic for CVTW Sonic sprites
+;Credits to SeanAlty for a few code snippets
 ;Credit to Sega for the Sonic Advance FX and Sonic voices/SFX
 ;Some SFX also from Super Smash Bros. Brawl
+;Credits to some random Deviantart user I forgot for rocket sprites
+;Thanks to Coldnfox for balance feedback
+;Rank icons by HammerBro101 on Deviantart
+
+
+
+
+
+;Sprite Credits
+
+
+
+;Nome De Gente:
+;J.MK Lineart
+;Boom Kick (All versions)
+;5HP Sprite
+;5HK Sprite
+;Flip KO Sprite
+;Spin KO Sprite
+
+;Yoshin Pixels:
+;Ring Burst Curl
+;Ring Burst FX
+;Finisher 1 FX
+;Finisher 1 End Pose
+;Finisher 1 Ball Sprites
+;Ring Sprites
+;Gem Sprites
+;Gem FX
+;Gem Throw Anim
+;J.MK Shading
+;MSHVSF Super BG (Used in Finisher 3)
+;2LK Sprite
+
+
+;Denis:
+;Cliff Portrait
+;Mini Portrait (also with some help from HB and Plus.)
+;Win portrait
+
+;SonicHalo3435:
+;Gotenks Drawing
+
+;HB Productions:
+;Tails Tornado Sprite
+;Sonic Dashing Sprite during Shadow outro
+;Walk back Sprite
+;Run Back Sprite
+;Old Emo Bar
+
+
+;Ohmga Shironeko
+;New Emo Bar
+
+;Skipper
+;Shock Sprite Outlines
+
+
+;Funky Dunkerz
+;Slight Sprite edits to crouch
+
+;Modd
+;Scary Sonic Sprite
+
+
+;GadgetMcFly:
+;Ring Burst Anim
+;Piggy (also with help from HB)
+;Rabbit
+;Midnight Bliss
+
 pal.defaults = 1,2,3,4,5,6,7
 localcoord = 320,240
 
@@ -34,6 +106,8 @@ st6	= states/specials.cns
 st7	= states/supers.cns
 st8	= config.txt
 st9 = states/emotion.cns
+st0 = states/finishers.cns
+;st10 = NOTES.txt
 stcommon = common1.cns
 
 ;====================================================================

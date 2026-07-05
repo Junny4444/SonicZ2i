@@ -21,7 +21,6 @@
 type = S
 movetype = I
 physics = S
-juggle = 10
 anim = 1300
 ctrl = 0
 poweradd = 0
@@ -116,7 +115,6 @@ value = 105
 type = S
 movetype = I
 physics = S
-juggle = 10
 ctrl = 0
 poweradd = 0
 velset = 0,0
@@ -124,7 +122,7 @@ velset = 0,0
 [State grabgethitvar]
 type = null
 triggerall = gethitvar(hitshaketime)
-trigger1 = 1 || fvar(34) := floor(gethitvar(hitshaketime)*0.75)
+trigger1 = 1 || fvar(34) := floor(gethitvar(hitshaketime)*0.5)
 persistent = 0
 
 ;[State 901, life removal]
@@ -219,10 +217,26 @@ value = 1302
 type = S
 movetype = A
 physics = S
-juggle = 10
 anim = 1301
 ctrl = 0
 velset = 0,0
+
+;animate through blur anim on hitpause code (only use this if an attack can hit on a blur frame) this will be the only example given
+    [State 200, Time Offset]
+    type = VarSet
+    trigger1 = moveContact = 1
+    var(15) = Time
+    ignorehitpause = 1
+    persistent = 0
+
+    [State 200, Play Anim]
+    type = ChangeAnim
+    triggerall = AnimElemTime(3) >= 0 && AnimElemTime(4) <= 0 ;(2)would be the blur frame while (3) is the nonblur
+    trigger1 = hitPauseTime = [1,15 - (5 - var(15))] ;[1,10 - (5 - var(15))] means [1,10 {change the 10 to the hitpausetime} - (5 {change the 5 to how long it takes before you get to the frame you want the pause to stay on}- var(15))]
+    value = anim
+    elem = 4
+    ignorehitpause = 1
+;end blur code
  
 ;PalFX sctrls; the first removes any earlier stuff, and the second the white flash that appears if you have maxed out focus
 [state 901, cancel earlier fx flash]
@@ -239,11 +253,12 @@ add = 128,128,128
 sinadd = -128,-128,-128,32
 time = 8
 
+
 [State 220, snd]
 type = playsnd
-trigger1 = animelem = 2
-value = 3,110
-channel = 0
+trigger1 = animelem=2
+value = 3,20+random%4
+channel = -1
 
 [State 1302, 2]
 type = PlaySnd
@@ -275,7 +290,7 @@ type = explod
 trigger1 = animelemtime(2)=1
 anim = 1206+(var(2)=0)
 id = 1206
-pos = 30,0
+pos = -10,0
 postype = P1
 sprpriority = -3
 ownpal = 1
@@ -298,7 +313,7 @@ guardflag = M
 hitflag = M
 priority = 4, Hit
 pausetime = 9, 9
-guard.pausetime = 20,10
+guard.pausetime = 12,10
 sparkno = s7020
 guard.sparkno = s7000
 sparkxy = -17,-20
@@ -317,11 +332,14 @@ air.velocity = -3.5,-6
 air.hittime = 9
 getpower = 101,101
 givepower = 35,35
+envshake.time = 7
+envshake.ampl = 3
+envshake.freq = 40
 ground.cornerpush.veloff = -7.25
 air.cornerpush.veloff = 0
 yaccel = .55
 air.fall = 1
-air.juggle = 15
+fall.envshake.ampl = ID
 fall = (p2movetype=H)
  
 [State 902, 0-30]
@@ -355,11 +373,14 @@ air.velocity = -3.5,-6
 air.hittime = 9
 getpower = 101,101
 givepower = 35,35
+envshake.time = 7
+envshake.ampl = 3
+envshake.freq = 40
 ground.cornerpush.veloff = -7.25
 air.cornerpush.veloff = 0
 yaccel = .55
 air.fall = 1
-air.juggle = 15
+fall.envshake.ampl = ID
 fall = (p2movetype=H)
  
 ;LV 2 MAX 1-limiter
@@ -395,15 +416,20 @@ air.velocity = -3.5,-6
 air.hittime = 9
 getpower = 101,101
 givepower = 35,35
+envshake.time = 7
+envshake.ampl = 3
+envshake.freq = 40
 ground.cornerpush.veloff = -7.25
 air.cornerpush.veloff = 0
 yaccel = .55
+fall.envshake.ampl = ID
 ;p2stateno = 1320 ; <- Opponent sent to flying state
 ID = 1320
 
 ; LV 2 MAX
 [State 902, max-charge]
 type = HitDef
+triggerall = !NumExplod(5050)
 triggerall = !MoveContact && !MoveReversed && FVar(9) = 60
 trigger1 = p2stateno = 5300 ;Checks if the opponent is in the dizzy state
 trigger2 = ifelse(enemy,time <= 10,enemy, prevstateno = 5300,0)
@@ -434,11 +460,60 @@ air.velocity = -3.5,-6
 air.hittime = 9
 getpower = 101,101
 givepower = 35,35
+envshake.time = 7
+envshake.ampl = 3
+envshake.freq = 40
 ground.cornerpush.veloff = -7.25
 air.cornerpush.veloff = 0
 yaccel = .55
 air.fall = 1
-air.juggle = 15
+fall.envshake.ampl = ID
+;p2stateno = 1320 ; <- Opponent sent to flying state
+ID = 1322
+
+
+; LV 2 MAX
+[State 902, max-charge]
+type = HitDef
+triggerall = NumExplod(5050)
+triggerall = !MoveContact && !MoveReversed && FVar(9) = 60
+trigger1 = p2stateno = 5300 ;Checks if the opponent is in the dizzy state
+trigger2 = ifelse(enemy,time <= 10,enemy, prevstateno = 5300,0)
+trigger3 = NumExplod(1302)
+trigger4 = P2MoveType = H 
+attr = S, NA
+damage = 59,0
+animtype = Hard
+guardflag = MA ;<-- Commented out as you will not be blocking this. This will hurt, and you will fall!
+hitflag = MAF
+priority = 4, Hit
+pausetime = 14, 14
+sparkno = s7030
+guard.sparkno = s7000
+sparkxy = -17,-20
+hitsound   = s5, 6
+guardsound = S6,0
+ground.type = Low
+ground.slidetime = 20  ;14
+ground.hittime  = 20   ;14
+ground.velocity = -4.95
+guard.slidetime = 18
+guard.hittime = 18
+guard.ctrltime = 12
+airguard.velocity = -3.5,-4
+air.type = High
+air.velocity = -3.5,-6
+air.hittime = 9
+getpower = 101,101
+givepower = 35,35
+envshake.time = 7
+envshake.ampl = 3
+envshake.freq = 40
+ground.cornerpush.veloff = -7.25
+air.cornerpush.veloff = 0
+yaccel = .55
+air.fall = 1
+fall.envshake.ampl = ID
 ;p2stateno = 1320 ; <- Opponent sent to flying state
 ID = 1322
 
@@ -543,7 +618,7 @@ ctrl = 1
 
 
 ;-----------------------
-;SPEED DASH L (214LK)
+;SPEED DASH BACKDASH (214LK)
 [StateDef 1000]   
 type = S         
 movetype = I      
@@ -577,13 +652,6 @@ trigger1 = AnimElem = 2
 value = S0,52
 volume = 1
 channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan = 
-;ignorehitpause = 
-;persistent = 
 
 
 
@@ -616,7 +684,7 @@ ctrl = 1
 
 
 ;-----------------------
-;SPEED DASH M (214MK)
+;SPEED DASH FORWARD (236LK)
 [StateDef 1001]   
 type = S         
 movetype = I      
@@ -656,14 +724,14 @@ trigger1 = AnimElem = 2
 value = S0,52
 volume = 1
 channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan = 
-;ignorehitpause = 
-;persistent = 
 
+
+
+[State 0, Width]
+type = Width
+trigger1 = AnimElemtime(4) >= 0
+edge = -23,-23
+persistent = 1
 
 
 [State 0, VelAdd]
@@ -697,12 +765,26 @@ ctrl = 1
 type = S
 movetype= A
 physics = S
-juggle  = 1
 velset = 0,0
 ctrl = 0
 anim = 1100
-poweradd = 40
+poweradd = 25
 sprpriority = 2
+
+[State 0, Spindash Hitcount] ;Resets the limiter
+type = VarSet
+trigger1 = 1
+var(11) = 0
+persistent = 0
+
+
+[State 0, Width]
+type = Width
+trigger1 = 1
+value = 15,6
+ignorehitpause = 1
+
+
 
 [state 1215, Smoke FX]
 type = explod
@@ -728,7 +810,7 @@ trigger3 = AnimElem = 5
 trigger4 = AnimElem = 6
 attr = S, SA
 damage = ceil(ifElse(fvar(11) * 14 < 7, 7, fvar(11) * 14)), 5
-animtype = heavy
+animtype = hard
 guardflag = LA
 hitflag = MAF
 priority = 3, Hit
@@ -748,6 +830,7 @@ airguard.velocity = -1.9,-.8
 air.type = High
 air.velocity = -1.4,-3
 air.hittime = 128
+getpower = ifelse(p2movetype = H,75,175),35
 envshake.time = 10
 down.hittime = 30
 envshake.ampl = 3
@@ -756,15 +839,6 @@ envshake.ampl = 3
 type = PlaySnd
 trigger1 = animelem = 4
 value = S100,2
-volume = 255
-channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan =
-;ignorehitpause =
-;persistent 
 
 
 [State 1400, end]
@@ -780,12 +854,32 @@ ctrl = 0
 type = S
 movetype= A
 physics = N
-juggle  = 1
 ;velset = 0,0
 ctrl = 0
 anim = 1101
 poweradd = 0
 sprpriority = 2
+
+
+[State 0, Reset Bits]
+type = Null
+trigger1 = 1 || var(42) := var(42) - (var(42)&4194304)
+persistent = 0
+
+
+[State 0, Set Hit Bit]
+type = Null
+triggerall = movecontact
+trigger1 = 1 || var(42) := var(42) + 4194304*((var(42)&4194304)=0)
+persistent = 0
+
+
+
+[State 0, Width]
+type = Width
+trigger1 = 1
+value = 15,6
+ignorehitpause = 1
 
 [State 0, VelAdd]
 type = VelAdd
@@ -819,12 +913,11 @@ scale = .8,.8
 
 [State 1400, 1]
 type = HitDef
-triggerall = Var(18) <= 15
 triggerall = var(11) < 4
 trigger1 = 1
 attr = S, SA
 damage = ceil(ifElse(fvar(11) * 15 < 7, 7, fvar(11) * 15)), 2
-animtype = heavy
+animtype = hard
 guardflag = LA
 hitflag = MAF
 priority = 3, Hit
@@ -843,7 +936,7 @@ airguard.velocity = -1.9,-.8
 air.type = High
 air.velocity = -1.4,-3
 air.hittime = 128
-getpower = 3
+getpower = ifelse(p2movetype = H,45,145),35
 envshake.time = 10
 envshake.ampl = 2
 
@@ -854,7 +947,7 @@ triggerall = var(11) < 6
 trigger1 = 1
 attr = S, SA
 damage = ceil(ifElse(fvar(11) * 25 < 7, 7, fvar(11) * 25)), 4
-animtype = heavy
+animtype = hard
 guardflag = L
 hitflag = MAF
 priority = 3, Hit
@@ -869,7 +962,7 @@ ground.type = Trip
 ground.slidetime = 23
 ground.hittime  = 23
 guard.hittime = 17
-getpower = 5
+getpower = 105,35
 yaccel = 0.7
 ground.velocity = -4,-3.5
 airguard.velocity = -1.9,-.8
@@ -877,6 +970,7 @@ air.type = High
 air.velocity = -1.4,-3
 air.hittime = 128
 envshake.time = 10
+fall = 1
 envshake.ampl = 2
 
 
@@ -885,26 +979,22 @@ envshake.ampl = 2
 type = Changestate
 trigger1 = time = 26
 trigger2 = var(11) >=6
-value = 1102
+value = cond((var(42)&4194304) != 0,1102,1105)
 ctrl = 0
 
 ;------------------------------
-;Spindash end 
+;Spindash end on hit
 [StateDef 1102]   
-type = S          ; SCA
-movetype = U      ; AIHU
-physics = S       ; SCANU
-anim = 1102          ;refers to the .Air file
+type = S          
+movetype = I     
+physics = S      
+anim = 1102          
 
-[State 0, PlaySnd]
+[State 0, Skid]
 type = PlaySnd
-trigger1 = Time = 0
+trigger1 = 1
 value = S5,9
-volume = 100
-channel = -1
-freqmul = 1.0
-loop = 0
-pan = 0
+persistent = 0
 
 
 [State 0, ChangeState]
@@ -920,14 +1010,23 @@ ctrl = 1
 type = S
 movetype= A
 physics = S
-juggle  = 1
 velset = 0,0
 ctrl = 0
 anim = 1100
 poweradd = -500
 sprpriority = 2
 
+[State 0, Spindash Hitcount] ;Resets the limiter
+type = VarSet
+trigger1 = 1
+var(11) = 0
+persistent = 0
 
+[State 0, Width]
+type = Width
+trigger1 = 1
+value = 15,6
+ignorehitpause = 1
 
 [State 6100, EX snd]
 type = playsnd
@@ -946,8 +1045,12 @@ ignorehitpause = 1
 
 [State 8000, Train]
 type = AfterImage
-trigger1 = Time = 4
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time >= 4
 time = 20
+timegap= 1
+framegap= 4
+length= 6
 palbright = 40,30,-40
 palcontrast = 256,206,206
 trans = add1
@@ -978,10 +1081,10 @@ trigger3 = AnimElem = 5
 trigger4 = AnimElem = 6
 attr = S, SA
 damage = ceil(ifElse(fvar(11) * 17 < 7, 7, fvar(11) * 17)), 5
-animtype = heavy
-guardflag = L
+animtype = medium
+guardflag = LA
 hitflag = MAF
-priority = 3, Hit
+priority = 4,Hit
 pausetime = 6, 6
 guard.pausetime = 4,4
 sparkno = s7020
@@ -996,7 +1099,8 @@ ground.velocity = -4
 airguard.velocity = -1.9,-.8
 air.type = High
 air.velocity = -1.4,-3
-getpower = 0
+getpower = 0,0
+givepower = 10,10
 air.hittime = 128
 envshake.time = 10
 envshake.ampl = 3
@@ -1005,15 +1109,6 @@ envshake.ampl = 3
 type = PlaySnd
 trigger1 = animelem = 4
 value = S100,2
-volume = 255
-channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan =
-;ignorehitpause =
-;persistent 
 
 
 [State 1400, end]
@@ -1027,11 +1122,41 @@ ctrl = 0
 type = S
 movetype= A
 physics = N
-juggle  = 1
 ;velset = 0,0
 ctrl = 0
 anim = 1101
 sprpriority = 2
+
+[State 0, Reset Bits]
+type = Null
+trigger1 = 1 || var(42) := var(42) - (var(42)&4194304)
+persistent = 0
+
+
+[State 0, Set Hit Bit]
+type = Null
+triggerall = movecontact 
+trigger1 = 1 || var(42) := var(42) + 4194304*((var(42)&4194304)=0)
+persistent = 0
+
+[State 0, Width]
+type = Width
+trigger1 = 1
+value = 15,6
+ignorehitpause = 1
+
+[State 8000, Train]
+type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time = 0
+time = 60
+framegap = 3
+palbright = 40,30,-40
+palcontrast = 256,206,206
+trans = add1
+ignorehitpause = 1
+
+
 
 [State 0, VelAdd]
 type = VelAdd
@@ -1056,6 +1181,7 @@ ignorehitpause = 1
 
 [State 8000, Train]
 type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
 trigger1 = Time = 0
 time = 20
 palbright = 40,30,-40
@@ -1081,15 +1207,15 @@ scale = .8,.8
 [State 1400, 1]
 type = HitDef
 triggerall = Var(18) <= 15
-triggerall = var(11) < 8
 trigger1 = 1
 attr = S, SA
 damage = ceil(ifElse(fvar(11) * 14 < 7, 7, fvar(11) * 14)), 2
 animtype = heavy
-guardflag = L
+guardflag = LA
 hitflag = MAF
-priority = 3, Hit
-pausetime = 10, 10
+priority = 4,Hit
+pausetime = 7, 7
+guard.pausetime = cond(var(11) >= 7,10,7),7
 sparkno = s7020
 guard.sparkno = s7000
 sparkxy = -10, -26
@@ -1098,13 +1224,15 @@ guardsound = s6, 0
 ground.type = Low
 ground.slidetime = 18
 ground.hittime  = 18
-guard.hittime = 11
+guard.hittime = 8
 ground.velocity = -4
 airguard.velocity = -1.9,-.8
 air.type = High
 air.velocity = -1.4,-3
 air.hittime = 128
 yaccel = 0.7
+givepower = 10,10
+getpower = 0,0
 envshake.time = 10
 envshake.ampl = 2
 
@@ -1114,17 +1242,40 @@ envshake.ampl = 2
 type = Changestate
 trigger1 = time = 25
 trigger2 = var(11) >= 8
-value = 1102
+value = cond((var(42)&4194304) != 0,1102,1105)
 ctrl = 0
+;------------------------------
+;Spindash end on whiff or block
+[StateDef 1105]   
+type = S          
+movetype = I     
+physics = S      
+anim = 1105          
+
+[State 0, Skid]
+type = PlaySnd
+trigger1 = 1
+value = S5,9
+persistent = 0
+
+
+[State 0, ChangeState]
+type = ChangeState
+trigger1 = time >= 40
+value = 0 
+ctrl = 1
+
+
+
 ;---------------------------
-;Homing Attack Startup (j.236K)
+;Homing Attack Startup (j.236P)
 [StateDef 1200]   
 type = A          
 movetype = A      
 physics = A    
 anim = 1200        
 ctrl = 0
-
+facep2 = 1
 
 [State 0, PlaySnd]
 type = PlaySnd
@@ -1142,23 +1293,12 @@ trigger1 = Time >= 0
 x = 0
 y = -1.5
 
-[State 0, ChangeState]
-type = ChangeState
-trigger1 = Time > 15  
-trigger1 = abs(Pos x - enemynear, pos x) < 150
-;trigger1 = P2Dist Y > -90 
-value = 1202
-ctrl = 0
-ignorehitpause = 1
 
-
-
-[State 0, ChangeState]
+[State 0, Lock On]
 type = ChangeState
 trigger1 = Time > 15
-trigger1 = abs(Pos x - enemynear, pos x) > 150
 ;trigger1 = P2Dist Y > -90   
-value = 1201
+value = cond(abs(Pos x - enemynear, pos x) > 150,1201,1202)
 ctrl = 0
 
 
@@ -1182,37 +1322,50 @@ movetype = A
 physics = A    
 anim = 1200        
 ctrl = 0
-juggle = 0
 
 
-[State 0, AfterImageTime]
-type = AfterImageTime
-trigger1 = 1
-time = 30
+[State 0, Voice]
+type = PlaySnd
+triggerall = var(16) = 0 
+trigger1 = Time = 0
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
+
+
+[State 0, Voice]
+type = PlaySnd
+triggerall = var(16) >= 1
+trigger1 = Time = 0
+value = S1000,5+random%2
+volumescale = 100
+channel = 0
+
+
 
 [State 0, AfterImage]
 type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
 trigger1 = animelem = 1
 time = 15
 length = 10
-palcolor = 0
-;palinvertall = 0
-palbright = 30,30,230
-;palcontrast = 120,120,220
-;palpostbright = 0,0,0
-;paladd = 10,10,25
-;palmul = .65,.65,.75
+palcolor = 180
+palbright = 170,170,170
 timegap = 1
 framegap = 1
 trans = add ;"none","add1","sub"
-;ignorehitpause =
-;persistent =
 
 [State 0, VelSet]
 type = VelSet
 trigger1 = Time > 0
 x = 45*((P2dist x)/180)
-y = 9
+
+[State 0, VelSet]
+type = VelSet
+trigger1 = Time > 0
+y = cond(p2dist Y > 0,9,-9)
+persistent = 0
+
 
 
 [State 0, PlaySnd]
@@ -1227,7 +1380,7 @@ freqmul = 1.0
 [State 1000, 1]
 type = HitDef
 triggerall = var(16) >= 0 
-trigger1 = 1
+trigger1 = time >= 1
 attr = A, SA
 damage = ceil(ifElse(fvar(11) * 37 < 7, 7, fvar(11) * 37)),5
 animtype = heavy
@@ -1251,6 +1404,8 @@ air.velocity = -4.4,-5
 air.hittime = 18
 yaccel = 0.4
 air.fall = 1
+getpower = ifelse(P2movetype = H,40,140),35
+givepower = 35,35
 fall.recover = 0
 envshake.time = 10
 envshake.ampl = 3
@@ -1259,7 +1414,7 @@ envshake.ampl = 3
 [State 1000, 1] ;Only triggered on Homing attack cancel
 type = HitDef
 triggerall = var(16) >= 1
-trigger1 = 1
+trigger1 = time >= 1
 attr = A, SA
 damage = ceil(ifElse(fvar(11) * 49 < 7, 7, fvar(11) * 49)),5
 animtype = heavy
@@ -1280,6 +1435,8 @@ airguard.velocity = -1.9,-.8
 air.type = High
 air.velocity = -4.4,8
 air.hittime = 18
+getpower = 90,35
+givepower = 35,35
 fall = 1
 ID = 1202
 envshake.time = 10
@@ -1298,9 +1455,24 @@ persistent = 0
 ;If homing attack in range and hit
 [State 0, ChangeState]
 type = ChangeState
-trigger1 = Movecontact
+trigger1 = MoveHit
 value = 1205 
 ctrl = 1
+
+[State 0, ChangeState]
+type = ChangeState
+trigger1 = Moveguarded
+value = 1203
+ctrl = 0
+
+
+[State 0, Safety]
+type = ChangeState
+trigger1 = time >= 90
+value = 50
+ctrl = 0
+
+
 
 ;----------------------------------------
 ;Homing Attack Miss
@@ -1313,23 +1485,15 @@ anim = 1201
 sprpriority = 2
 
 
-[State 0, AfterImageTime]
-type = AfterImageTime
-trigger1 = 1
-time = 5
 
 [State 0, AfterImage]
 type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
 trigger1 = animelem = 1
 time = 15
 length = 10
-palcolor = 0
-;palinvertall = 0
-palbright = 30,30,230
-;palcontrast = 120,120,220
-;palpostbright = 0,0,0
-;paladd = 10,10,25
-;palmul = .65,.65,.75
+palcolor = 180
+palbright = 170,170,170
 timegap = 1
 framegap = 1
 trans = add ;"none","add1","sub"
@@ -1375,14 +1539,13 @@ trigger1 = Time = 10
 type= changestate
 trigger1= vel y > 0
 trigger1= pos y > -vel y
-value= 52
+value= 52005
 ;---------------------
 ;Homing Attack Rebound
 [StateDef 1205]
 type = A
 movetype= I
 physics = N
-juggle  = 1
 velset = -1,-5
 ctrl = 0
 anim = 1200
@@ -1397,11 +1560,37 @@ trigger1 = 1
 
 [State 1000, Land]
 type= changestate
+triggerall = moveguarded = 0
 trigger1= vel y > 0
 trigger1= pos y > -vel y
 value= 52
+;---------------------
+;Homing Attack Rebound Blocked
+[StateDef 1203]
+type = A
+movetype= I
+physics = N
+velset = -1,-5
+ctrl = 0
+anim = 1200
+sprpriority = 2
+
+[State 0, Gravity]
+type = Gravity
+trigger1 = 1
+;ignorehitpause =
+;persistent =
+
+
+[State 1000, Land]
+type= changestate
+triggerall = moveguarded = 0
+trigger1= vel y > 0
+trigger1= pos y > -vel y
+value= 52000
+
 ;---------------------------
-;EX Homing Attack Startup (j.236KK)
+;EX Homing Attack Startup (j.236PP)
 [StateDef 1206]   
 type = A          
 movetype = A      
@@ -1409,6 +1598,7 @@ physics = A
 anim = 1200        
 ctrl = 0
 poweradd = -500
+facep2 = 1
 
 
 [State 6100, EX snd]
@@ -1446,19 +1636,9 @@ y = -1.5
 [State 0, ChangeState]
 type = ChangeState
 trigger1 = Time > 7  
-trigger1 = abs(Pos x - enemynear, pos x) < 180
-value = 1207
+value = cond(abs(Pos x - enemynear, pos x) > 180,1201,1207)
 ctrl = 0
 ignorehitpause = 1
-
-
-
-[State 0, ChangeState]
-type = ChangeState
-trigger1 = Time > 7
-trigger1 = abs(Pos x - enemynear, pos x) > 180
-value = 1201
-ctrl = 0
 
 
 
@@ -1481,10 +1661,14 @@ type = A
 movetype = A      
 physics = A    
 anim = 1200 
-juggle = 0 
 ctrl = 0
 
-
+[State 0, Voice]
+type = PlaySnd 
+trigger1 = Time = 0
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
 
 [State 8000, flash]
 type = PalFX
@@ -1494,34 +1678,33 @@ time=1
 ignorehitpause = 1
 
 
-[State 0, AfterImageTime]
-type = AfterImageTime
-trigger1 = 1
-time = 30
 
-[State 0, AfterImage]
+
+
+
+[State 8000, Train]
 type = AfterImage
-trigger1 = animelem = 1
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time = 0
 time = 15
 length = 10
 palcolor = 0
-;palinvertall = 0
-palbright = 30,30,230
-;palcontrast = 120,120,220
-;palpostbright = 0,0,0
-;paladd = 10,10,25
-;palmul = .65,.65,.75
+palbright = 90,90,100
+palcontrast = 120,80,30
 timegap = 1
 framegap = 1
 trans = add ;"none","add1","sub"
-;ignorehitpause =
-;persistent =
 
 [State 0, VelSet]
 type = VelSet
 trigger1 = Time > 0
 x = 50*((P2dist x)/180)
-y = 7
+
+[State 0, VelSet]
+type = VelSet
+trigger1 = Time > 0
+y = cond(p2dist Y > 0,9,-9)
+persistent = 0
 
 
 [State 0, PlaySnd]
@@ -1535,7 +1718,7 @@ freqmul = 1.0
 
 [State 1000, 1]
 type = HitDef 
-trigger1 = 1
+trigger1 = time >= 1
 attr = A, SA
 damage = ceil(ifElse(fvar(11) * 25 < 7, 7, fvar(11) * 25)),5
 animtype = heavy
@@ -1558,7 +1741,8 @@ air.type = High
 air.velocity = -4.4,-5
 air.hittime = 18
 yaccel = 0.4
-getpower = 0,5
+getpower = 0,0
+givepower = 35,35
 air.fall = 1
 fall.recover = 0
 envshake.time = 10
@@ -1579,7 +1763,7 @@ type = VarSet
 trigger1 = movehit
 fv = 13
 value = 6
-ignorehitpause = 1
+ignorehitpause = 0
 
 
 
@@ -1591,13 +1775,19 @@ value = 1208
 ctrl = 1
 
 
+[State 0, Safety]
+type = ChangeState
+trigger1 = time >= 90
+value = 50
+ctrl = 0
+
+
 ;---------------------
 ;EX Homing Attack Rebound
 [StateDef 1208]
 type = A
 movetype= I
 physics = N
-juggle  = 1
 velset = 3,-5
 ctrl = 0
 anim = 1200
@@ -1624,7 +1814,7 @@ trigger1= pos y > -vel y
 value= 52
 
 ;----------------------
-;Air Trick Attack L (j.214LP)
+;Air Trick Attack L (j.214LK)
 [StateDef 1500]   
 type = A          ; SCA
 movetype = A      ; AIHU
@@ -1633,7 +1823,13 @@ anim = 1500          ;refers to the .Air file
 velset = 5,-6    
 ctrl = 0           
 ;poweradd =
-juggle = 0
+
+[State 0, Voice]
+type = PlaySnd 
+triggerall = random<800
+trigger1 = Time = 0 
+value = S1000,1+random%2
+channel = 0
 
 [State 0, PlaySnd]
 type = PlaySnd
@@ -1653,73 +1849,112 @@ type = VelAdd
 trigger1 = 1
 y = 0.4
 
-[State 0, VarSet]
+[State 0, Limiter]
+type = Varadd
+trigger1 = (var(42)&134217728) = 0
+var(42) = 134217728
+persistent = 0
+
+
+
+[State 0, Reset Air Dash]
 type = VarSet
-trigger1 = Time = 1
-v = 3    ;fv = 10
-value = 1
-;ignorehitpause = 
-;persistent = 
-
-
-
-[State 0, VarSet]
-type = VarSet
-trigger1 = Time = 1
+trigger1 = !time
 var(10) = 0   
 ignorehitpause = 1
-;persistent = 
+
+
 
  [State 0, TargetBind]
 type = TargetBind
-trigger1 = movehit && time < 28 && !moveguarded && P2statetype = A
+triggerall = numtarget(1500) || numtarget(1501)
+trigger1 = movehit && time < 28 && !moveguarded && target,statetype = A
+trigger1 = abs(pos y - target,pos y) <= 140
 time = 1
-id = -1
-pos = 30,10
+pos = 40,20
 ignorehitpause = 1
-;persistent = 
+persistent = 1
 
 [State 0, Explod]
 type = Explod
 trigger1 = AnimElem = 1
 anim = 1501
 ID = 1501
-pos = -25,0
-postype = P1  ;P2, Front, Back, Left, Right
+pos = 5,-25
+postype = P1 
 facing = 1
-vfacing = 1
 bindtime = -1
-vel = 0,0
-accel = 0,0
-random = 0,0
-removetime = -1
 supermovetime = 0
 pausemovetime = 0
-scale = 0.6,0.6
+scale = 1.77,1.77
 ignorehitpause = 0
 sprpriority = 0
 ontop = 1
-shadow = 0,0,0
 ownpal = 1
 removeongethit = 1
-;ignorehitpause = 
-;persistent = 
+ignorehitpause = 0
+
+[State 0, VarSet]
+type = VarSet
+triggerall = !time
+trigger1 = P2StateType = A
+var(35) = 1
+ignorehitpause = 1
+
+
+[State 0, VarAdd]
+type = VarAdd
+triggerall = MoveHit = 1
+trigger1 = P2StateType = A
+var(18) = 1
+ignorehitpause = 1
+persistent = 0
 
 [State 0, HitDef]
 type = HitDef
-trigger1 = AnimElem = 1 || AnimElem = 2 || AnimElem = 8 || AnimElem = 9 || AnimElem = 16
+trigger1 = AnimElem = 1 
+attr = A,SA        
+hitflag = MAF      
+guardflag = MA         
+animtype = Hard         
+air.animtype = Hard
+priority = 3,Hit
+damage = ceil(ifElse(fvar(11) * 10 < 7, 7, fvar(11) * 10)),2
+pausetime = 4,14
+guard.pausetime = 2,2
+sparkno = s7010
+guard.sparkno = s7000
+sparkxy = 0,-30
+hitsound = s5, 2
+guardsound = s6, 0
+ground.type = Trip    
+air.type = High
+ground.slidetime = 7
+ground.hittime = 7
+guard.hittime = 6
+air.hittime = 45
+getpower = ifelse(P2movetype = H,40,120),35
+givepower = 35,35
+ground.velocity = -1,0
+air.velocity = -1.3,-1
+ID = 1500
+
+
+[State 0, HitDef]
+type = HitDef
+trigger1 = AnimElem = 2 || AnimElem = 8 || AnimElem = 9 || AnimElem = 16
 attr = A,SA        
 hitflag = MAF      
 guardflag = MA         
 animtype = Hard         
 air.animtype = Hard
 priority = 4,Hit
-damage = ceil(ifElse(fvar(11) * 18 < 7, 7, fvar(11) * 18)),2
-pausetime = 4,4
+damage = ceil(ifElse(fvar(11) * 10 < 7, 7, fvar(11) * 10)),2
+pausetime = 4,14
 guard.pausetime = 2,2
 sparkno = s7010
 guard.sparkno = s7000
-sparkxy = 0,0
+sparkxy = 0,-30
 hitsound = s5, 2
 guardsound = s6, 0
 ground.type = Trip    
@@ -1727,9 +1962,11 @@ air.type = High
 ground.slidetime = 6
 ground.hittime = 6
 guard.hittime = 4
-air.hittime = 45
+air.hittime = 15
 ground.velocity = -1,0
-air.velocity = -1.3,-4
+air.velocity = -1.3,-2
+ID = 1501
+
 
 
 [State 0, ChangeState]
@@ -1750,37 +1987,71 @@ ignorehitpause = 1
  ;Lightspeed Dash Meter gain values
 [State 0, VarAdd]
 type = VarAdd
-trigger1 = Movehit = 1 && var(2) <= 293
-var(2) = 7
-ignorehitpause = 0
-;persistent = 
+trigger1 = Movehit = 1 && var(2) <= 288
+var(2) = 12
+ignorehitpause = 1
+persistent = 0
 
 [State 0, VarAdd]
 type = VarSet
-trigger1 = Movehit = 1 && var(2) > 293
+trigger1 = Movehit = 1 && var(2) > 288
 var(2) = 300
-ignorehitpause = 0
-;persistent = 
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, VarAdd] ;Install meter gain
+type = VarAdd
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) <= cond(!var(49),599,586)
+var(52) = cond(!var(49),14,1)
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, VarSet] ;Install meter gain 
+type = VarSet
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) > cond(!var(49),599,586)
+var(52) = 600
+ignorehitpause = 1
+persistent = 0
 
     
 ;----------------------
-;Air Trick Attack M/H (j.214MP/HP)
+;Air Trick Attack M/H (j.214MK/HK)
 [StateDef 1505]   
 type = A          ; SCA
 movetype = A      ; AIHU
 physics = N     ; SCANU
 anim = 1505         ;refers to the .Air file
 velset = 0,0    
-ctrl = 0           
-;poweradd =
+ctrl = 0         
+
+[State 0, Reset Hit Bit]
+type = Null
+trigger1 = 1 || var(42) := var(42) - (var(42)&1048576)
+persistent = 0
 
 
 
-[State 0, StateTypeSet]
-type = StateTypeSet
-trigger1 = AnimElem = 4
-physics = A        
-ignorehitpause = 1
+[State 0, Turn Hit Bit ON]
+type = Null
+trigger1 = movehit 
+trigger1 = 1 || var(42) := var(42) + 1048576*((var(42)&1048576)=0)
+persistent = 0  
+
+[State 0, Voice]
+type = PlaySnd 
+trigger1 = AnimElem = 3
+value = S1000,8+random%2
+volumescale = 100
+channel = 0
+
+[State 0, Gravity]
+type = Gravity
+trigger1 = AnimElemtime(4) >= 0
+ignorehitpause = 0
 
 
 [State 0, PlaySnd]
@@ -1789,10 +2060,6 @@ trigger1 = AnimElem = 4
 value = S0,53
 volume = 100
 channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
 
 
 [State 0, VelSet]
@@ -1800,8 +2067,16 @@ type = VelSet
 trigger1 = AnimElem = 4
 x = 10
 y = 1.5
-;ignorehitpause = 
-;persistent = 
+
+
+
+[State 0, Launch Limiter]
+type = Null
+triggerall = (var(42)&8192) = 0 ;No Limiter
+trigger1 = movehit = 1
+trigger1 = var(42) := var(42) + 8192*((var(42)&8192)=0) 
+persistent = 0
+
 
 
 
@@ -1811,29 +2086,23 @@ type = Explod
 trigger1 = AnimElem = 4
 anim = 1501
 ID = 1501
-pos = -25,0
-postype = P1  ;P2, Front, Back, Left, Right
+pos = 5,-25
+postype = P1 
 facing = 1
-vfacing = 1
 bindtime = -1
-vel = 0,0
-accel = 0,0
-random = 0,0
 removetime = -1
 supermovetime = 0
 pausemovetime = 0
-scale = 0.6,0.6
+scale = 1.77,1.77
 ignorehitpause = 0
 sprpriority = 0
 ontop = 1
-shadow = 0,0,0
 ownpal = 1
 removeongethit = 1
-;ignorehitpause = 
-;persistent = 
 
 [State 0, HitDef]
 type = HitDef
+triggerall = Var(18) + Var(35) <= 15
 trigger1 = AnimElem = 3
 attr = A,SA        
 hitflag = MAF      
@@ -1841,12 +2110,12 @@ guardflag = MA
 animtype = Hard         
 air.animtype = Hard
 priority = 4,Hit
-damage = ceil(ifElse(fvar(11) * 40 < 7, 7, fvar(11) * 40)),2
+damage = ceil(ifElse(fvar(11) * 40 < 16, 16, fvar(11) * 40)),2
 pausetime = 11,11
 guard.pausetime = 8,8
-sparkno = s7010
+sparkno = s7020
 guard.sparkno = s7000
-sparkxy = 0,0
+sparkxy = 0,-30
 hitsound = s5, 2
 guardsound = s6, 0
 ground.type = Trip    
@@ -1854,10 +2123,14 @@ air.type = High
 ground.slidetime = 14
 ground.hittime = 14
 guard.hittime = 12
-yaccel = 0.7
+yaccel = cond((var(42)&8192) = 0,0.55,0.8)
+fall.recover = 0
+air.fall = 1
+getpower = ifelse(P2movetype = H,60,180),35
+givepower = 35,35
 air.hittime = 45
 ground.velocity = -5,-4
-air.velocity = -1.3,-4
+air.velocity = -5,-5
 envshake.time = 5
 envshake.ampl = 2
 envshake.freq = 40
@@ -1866,24 +2139,55 @@ envshake.freq = 40
 ;Lightspeed Dash Meter gain values
 [State 0, VarAdd]
 type = VarAdd
-trigger1 = Movehit = 1 && var(2) <= 275
-var(2) = 25
-ignorehitpause = 0
-;persistent = 
+trigger1 = Movehit = 1 && var(2) <= 255
+var(2) = 40
+ignorehitpause = 1
+persistent = 0
 
 [State 0, VarAdd]
 type = VarSet
-trigger1 = Movehit = 1 && var(2) > 275
+trigger1 = Movehit = 1 && var(2) > 255
 var(2) = 300
-ignorehitpause = 0
-;persistent = 
+ignorehitpause = 1
+persistent = 0
 
  
+[State 0, VarAdd] ;Install meter gain
+type = VarAdd
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) <= cond(!var(49),575,597)
+var(52) = cond(!var(49),25,3)
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, VarSet] ;Install meter gain 
+type = VarSet
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) > cond(!var(49),575,597)
+var(52) = 600
+ignorehitpause = 1
+persistent = 0
+
+[State 0, Land Fast Recovery]
+type = ChangeState
+triggerall = pos y >= 0 && vel y > 0
+trigger1 = time >= 35 
+trigger2 = (var(42)&1048576) != 0
+value = 50
+ctrl = 1
+
+[State 0, Land Slow Recovery]
+type = ChangeState
+triggerall = pos y >= 0 && vel y > 0
+trigger1 = time < 35 && (var(42)&1048576) = 0
+value = 52010
+ctrl = 0
 
     
 
 ;----------------------
-;Air Trick Attack EX (j.214PP)
+;Air Trick Attack EX (j.214KK)
 [StateDef 1510]   
 type = A          ; SCA
 movetype = A      ; AIHU
@@ -1891,9 +2195,41 @@ physics = N     ; SCANU
 anim = 1510         ;refers to the .Air file
 velset = 0,0    
 ctrl = 0           
-;poweradd =
 poweradd = -500
 
+[State 0, Reset Hit Bit]
+type = Null
+trigger1 = 1 || var(42) := var(42) - (var(42)&1048576)
+persistent = 0
+
+
+
+[State 0, Turn Hit Bit ON]
+type = Null
+trigger1 = movehit 
+trigger1 = 1 || var(42) := var(42) + 1048576*((var(42)&1048576)=0)
+persistent = 0
+
+
+[State 8000, Train]
+type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time = 0
+time = 20
+timegap= 1
+framegap= 4
+length= 6
+palbright = 40,30,-40
+palcontrast = 256,206,206
+trans = add1
+ignorehitpause = 1
+
+[State 0, Voice]
+type = PlaySnd 
+trigger1 = AnimElem = 3
+value = S1000,5+random%3
+volumescale = 100
+channel = 0
 
 [State 6100, EX snd]
 type = playsnd
@@ -1907,14 +2243,6 @@ type = PalFX
 trigger1 = 1
 add = 40, 30, -40
 time=1
-ignorehitpause = 1
-
-
-
-[State 0, StateTypeSet]
-type = StateTypeSet
-trigger1 = AnimElem = 4
-physics = A        
 ignorehitpause = 1
 
 
@@ -1935,10 +2263,6 @@ type = VelSet
 trigger1 = AnimElem = 4
 x = 15
 y = 1.2
-;ignorehitpause = 
-;persistent = 
-
-
 
 
 [State 0, Explod]
@@ -1946,26 +2270,20 @@ type = Explod
 trigger1 = AnimElem = 4
 anim = 1501
 ID = 1501
-pos = -25,0
-postype = P1  ;P2, Front, Back, Left, Right
+pos = 5,-25
+postype = P1 
 facing = 1
-vfacing = 1
 bindtime = -1
-vel = 0,0
-accel = 0,0
-random = 0,0
 removetime = -1
 supermovetime = 0
 pausemovetime = 0
-scale = 0.6,0.6
+scale = 1.77,1.77
 ignorehitpause = 0
 sprpriority = 0
 ontop = 1
-shadow = 0,0,0
 ownpal = 1
 removeongethit = 1
-;ignorehitpause = 
-;persistent = 
+ignorehitpause = 0
 
 [State 0, HitDef]
 type = HitDef
@@ -1974,100 +2292,146 @@ attr = A,SA
 hitflag = MAF      
 guardflag = MA         
 animtype = Hard         
-priority = 4,Hit
+priority = 3,Hit
 damage = ceil(ifElse(fvar(11) * 65 < 7, 7, fvar(11) * 65)),2
-pausetime = 20,20
-guard.pausetime = 11,11
-sparkno = s7010
+pausetime = 15,15
+guard.pausetime = 13,11
+sparkno = s7030
 guard.sparkno = s7000
-sparkxy = 0,0
+sparkxy = 0,-30
 hitsound = s5, 2
 guardsound = s6, 0
 ground.type = Low    
 ground.slidetime = 18
 ground.hittime = 18
 yaccel = 0.5
-guard.hittime = 16
+guard.hittime = 12
 air.hittime = 45
+getpower = 0,0
+givepower = 35,35
 fall = 1
+fall.recovertime = 40
 ground.velocity = -5,-2
-air.velocity = -1.3,-4
+air.velocity = -3,-4
 envshake.time = 10
 envshake.ampl = 3
+getpower = 0,0
+givepower = 35,35
 envshake.freq = 40
 id = 1510
 
 [State 0, VelSet]
 type = VelSet
-trigger1 = Movehit
-x = 4
-ignorehitpause = 1
-;persistent = 
+trigger1 = Movehit = 1
+x = 2
+y = -3
+ignorehitpause = 0
+persistent = 0
 
 [State 0, Gravity]
 type = Gravity
-trigger1 = Movehit
+trigger1 = movehit > 1 && movehit <= 5
+ignorehitpause = 1
+
+[State 0, Gravity]
+type = Gravity
+trigger1 = animelemtime(4) >= 0
+ignorehitpause = 1
 
 
 [State 0, TargetState] ;Wallbounce
 type = TargetState
-triggerall = var(21) < 1
+triggerall = (var(42)&8388608) = 0 ;Limiter is not on
 trigger1 = MoveHit = 1
+trigger1 = numtarget
+trigger1 = !(target, ishelper)
 value = 3124
 ID = 1510
 ignorehitpause = 0
 ;persistent = 
 
-[State 0, VarSet]
-type = VarSet
+[State 0, Limiter]
+type = Null
 trigger1 = Movehit = 1
-var(21) = 1
+trigger1 = 1 || var(42) := var(42) + 8388608*((var(42)&8388608)=0)
 ignorehitpause = 0
+persistent = 0
 
 ;Lightspeed Dash Meter gain values
 [State 0, VarAdd]
 type = VarAdd
-trigger1 = Movehit = 1 && var(2) <= 255
-var(2) = 45
-ignorehitpause = 0
-;persistent = 
+trigger1 = Movehit = 1 && var(2) <= 265
+var(2) = 35
+ignorehitpause = 1
+persistent = 0
 
 [State 0, VarAdd]
 type = VarSet
-trigger1 = Movehit = 1 && var(2) > 255
+trigger1 = Movehit = 1 && var(2) > 265
 var(2) = 300
-ignorehitpause = 0
-;persistent = 
+ignorehitpause = 1
+persistent = 0
+
+[State 0, VarAdd] ;Install meter gain
+type = VarAdd
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) <= cond(!var(49),575,597)
+var(52) = cond(!var(49),25,3)
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, VarSet] ;Install meter gain 
+type = VarSet
+triggerall = var(51) = 1
+trigger1 = movehit = 1 && var(52) > cond(!var(49),575,597)
+var(52) = 600
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, Land]
+type = ChangeState
+trigger1 = pos y >= 0
+value = cond((var(42)&1048576) != 0, 52,52010)
+ctrl = 0
+
+
     
 
-
+;-------------------------
 ;Sonic Wave (214P)
 [StateDef 1605]   
-type = S          ; SCA
-movetype = A      ; AIHU
-physics = S       ; SCANU
-anim = 1601          ;refers to the .Air file
+type = S         
+movetype = A      
+physics = S       
+anim = 1601          
 velset = 0,0      
 ctrl =  0   
 
+[State 1000, fireball velocity]
+type = varset
+trigger1 = time <= 0&& !AIlevel
+var(25) = cond(NumExplod(90000210) || NumExplod(90000215), 2, cond(NumExplod(90000220) || NumExplod(90000225), 3, 1))
+ignorehitpause = 1
+
+[State 0, Voice]
+type = PlaySnd
+trigger1 = !Animtime
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
 
 [State 0, PlaySnd]
 type = PlaySnd
-trigger1 = Time = 0
+trigger1 = !time
 value = S800,3
 volume = 100
 channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan = 
-;ignorehitpause = 
-;persistent = 
 
 
 
-[state 1215, Smoke FX]
+[state 1215, Unique Dust FX]
 type = explod
 trigger1 = !time
 anim = 1604
@@ -2080,16 +2444,17 @@ removetime = -2
 bindtime = -1
 persistent = 0
 ignorehitpause = 1
+removeongethit = 1
 scale = 1.3,1.3
 
-[State 1000, lkb]
+[State 1000, Sonic Wave]
 type = Helper
-helpertype = normal
+triggerall = !Numhelper(1600)
 trigger1 = !AnimTime 
 name = "SonicWave"
 postype = P1
 pos = 0,0
-ownpal = 1
+ownpal = 0
 size.xscale = 1.5
 size.yscale = 1.5
 stateno = 1600
@@ -2100,14 +2465,6 @@ type = PlaySnd
 trigger1 = !AnimTime
 value = S800,2
 volume = 100
-channel = -1
-;lowpriority = -1
-freqmul = 1.0
-loop = 0
-pan = 0
-;abspan = 
-;ignorehitpause = 
-;persistent = 
 
 [state 1215, Smoke FX]
 type = explod
@@ -2122,6 +2479,7 @@ removetime = -2
 persistent = 0
 ignorehitpause = 1
 scale = .8,.8
+removeongethit = 1
 
 
 [State 0, ChangeState]
@@ -2130,43 +2488,430 @@ trigger1 = !Animtime
 value = 1610
 ctrl = 0
 
+;-------------------------
+;Sonic Wave EX (214PP)
+[StateDef 1605000]   
+type = S         
+movetype = A      
+physics = S       
+anim = 1601          
+velset = 0,0      
+ctrl =  0   
+poweradd = -500
+
+[State 8000, Train]
+type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time = 0
+time = 20
+timegap= 1
+framegap= 4
+length= 6
+palbright = 40,30,-40
+palcontrast = 256,206,206
+trans = add1
+ignorehitpause = 1
+
+[State 6100, EX snd]
+type = playsnd
+trigger1 = !time
+value = 7,0
+channel = 1
+
+
+[State 8000, flash]
+type = PalFX
+trigger1 = 1
+add = 40, 30, -40
+time=1
+ignorehitpause = 1
+
+[State 0, Init]
+type = Null
+trigger1 = 1 || var(25) := cond(NumExplod(90000210) || NumExplod(90000215), 2, cond(NumExplod(90000220) || NumExplod(90000225), 3, 1)) ;Fireball Velocity
+trigger1 = 1 || var(50) := 20 ;Set Launch Time
+persistent = 0
+
+[State 0, Voice]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = !time
+value = S800,3
+volume = 100
+channel = -1
+
+
+
+[state 1215, Unique Dust FX]
+type = explod
+trigger1 = !time
+anim = 1604
+id = 1604
+pos = -15,0
+postype = P1
+sprpriority = 3
+ownpal = 1
+removetime = -2
+bindtime = 10
+persistent = 0
+ignorehitpause = 1
+removeongethit = 1
+scale = 1.3,1.3
+
+[State 1000, Sonic Wave]
+type = Helper
+triggerall = !Numhelper(1600)
+trigger1 = time >= var(50)
+name = "SonicWave"
+postype = P1
+pos = 0,0
+ownpal = 0
+size.xscale = 1.5
+size.yscale = 1.5
+stateno = 1600
+id = 1600
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S800,2
+volume = 100
+
+[state 1215, Smoke FX]
+type = explod
+trigger1 = time >= var(50)
+anim = 1206
+id = 1206
+pos = 0,10
+postype = P1
+sprpriority = 3
+ownpal = 1
+removetime = -2
+persistent = 0
+ignorehitpause = 1
+scale = .8,.8
+removeongethit = 1
+
+
+[State 0, ChangeState]
+type = ChangeState
+trigger1 = time >= var(50)
+trigger1 = 1 || helper(1600),cond(1,var(12) := 1,0) ;Assigns EX Var
+value = 1610
+ctrl = 0
+
+
 ;Projectile Rebound State 
 [StateDef 1610]   
 type = A          
 movetype = I      
-physics = A       
+physics = N       
 anim = 1602         
 ctrl = 0
+poweradd = 0
+
+
+[State 0, Set Temp Var]
+type = Null
+trigger1 = 1 || var(50) := prevstateno
+persistent = 0
+
+
+[State 0, PlayerPush]
+type = PlayerPush
+trigger1 = var(50) = 2000 ;Sonic Wind
+value = 0
+ignorehitpause = 1
+
+
+
+[State 0, EX PalFX]
+type = PalFX
+trigger1 = var(50) = 1615000 || var(50) = 1605000
+add = 40, 30, -40
+time=1
+ignorehitpause = 1
+
+
+[State 0, Gravity]
+type = Gravity
+trigger1 = 1
+
 
 [State 0, CtrlSet]
 type = CtrlSet
-trigger1 = Time = 15
+triggerall = var(50) = 1605 || var(50) = 1605000 ;For Sonic Wave (Ground)
+trigger1 = Time >= 15
 value = 1
+persistent = 0
+
+[State 0, CtrlSet]
+type = CtrlSet
+triggerall = var(50) = 2000 ;For Sonic Wind Super
+trigger1 = Time >= 35
+value = cond((var(42)&2097152) != 0,1,0) ;Checks for hit bit
 
 
 [State 0, VelAdd]
 type = VelAdd
-triggerall = prevstateno = 2000 ;For Sonic Wind Super
-trigger1 = Time = 0
+trigger1 = var(50) = 2000 ;For Sonic Wind Super
 x = -1
 y = -10
 ignorehitpause = 1
+persistent = 0
 
 
 [State 0, VelAdd]
 type = VelAdd
-triggerall = prevstateno = 1605 ;For Sonic Wave
-trigger1 = Time = 0
+trigger1 = var(50) = 1605 || var(50) = 1605000 ;For Sonic Wave
 x = -3
 y = -10
 ignorehitpause = 1
+persistent = 0
 
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = var(50) = 1615 || var(50) = 1615000 ;For Air Sonic Wave
+x = -3
+y = -5
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = var(50) = 2665 ;For Mini Sonic Wind
+x = 3
+y = -10
+ignorehitpause = 1
+persistent = 0
+
+
+[State 0, Land]
+type = ChangeState
+trigger1 = pos y > -vel y 
+value = cond(var(50) = 2000 && (var(42)&2097152) = 0,52015,cond(var(50) = 1615 || var(50) = 1615000,52010,52))
+ctrl = 0
+
+;Air Sonic Wave (j.214P)
+[Statedef 1615]
+type = A
+physics = N
+movetype = A
+ctrl = 0
+velset = vel x * 0.6,vel y * 0.2
+anim = 1605
+
+
+[State 0, Init]
+type = Null
+trigger1 = 1 || fvar(3) := vel x ;Find out whether positive or negative vel X
+trigger1 = 1 || var(25) := cond(NumExplod(90000210) || NumExplod(90000215), 2, cond(NumExplod(90000220) || NumExplod(90000225), 3, 1)) ;Fireball Velocity
+trigger1 = 1 || var(50) := cond(var(25) = 1,10,cond(var(25) = 2,18,24)) ;Set Fireball Leave Time
+persistent = 0
+
+
+
+[State 0, Voice]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
+persistent = 0
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S800,2
+volume = 100
+persistent = 0
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = !time
+value = S800,3
+volume = 100
+channel = 2
+
+
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = time >= 15
+y = .15
+
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = vel x > 0 && fvar(3) > 0
+trigger2 = vel x < 0 && fvar(3) < 0
+x = cond(fvar(3) < 0,.2,-.2)
+
+[State 0, VelSet]
+type = VelSet
+trigger1 = vel x < 0 && fvar(3) > 0
+trigger2 = vel x > 0 && fvar(3) < 0
+x = 0
+
+
+
+
+[State 1000, Sonic Wave]
+type = Helper
+triggerall = !Numhelper(1602)
+trigger1 = time >= var(50)
+name = "AirSonicWave"
+postype = P1
+pos = 13,0
+ownpal = 0
+size.xscale = 1.5
+size.yscale = 1.5
+stateno = 1602
+id = 1602
+
+[State 0, Rebound]
+type = ChangeState
+trigger1 = time >= var(50)
+value = 1610
+ctrl = 0
+
+
+
+[State 0, Land]
+type = ChangeState
+trigger1 = pos y > -vel y
+value = 52
+ctrl = 1
+
+
+
+;Air Sonic Wave EX (j.214PP)
+[Statedef 1615000]
+type = A
+physics = N
+movetype = A
+ctrl = 0
+velset = vel x * 0.6,vel y * 0.2
+anim = 1605
+poweradd = -500
+
+[State 8000, Train]
+type = AfterImage
+triggerall = (var(42)&4) = 0 ;Speed Boost
+trigger1 = Time = 0
+time = 20
+timegap= 1
+framegap= 4
+length= 6
+palbright = 40,30,-40
+palcontrast = 256,206,206
+trans = add1
+ignorehitpause = 1
+
+[State 6100, EX snd]
+type = playsnd
+trigger1 = !time
+value = 7,0
+channel = 1
+
+
+[State 8000, flash]
+type = PalFX
+trigger1 = 1
+add = 40, 30, -40
+time=1
+ignorehitpause = 1
+
+
+[State 0, Init]
+type = Null
+trigger1 = 1 || fvar(3) := vel x ;Find out whether positive or negative vel X
+trigger1 = 1 || var(50) := 25 ;Set Fireball Leave Time
+persistent = 0
+
+
+
+[State 0, Voice]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S1000,0+random%3
+volumescale = 100
+channel = 0
+persistent = 0
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = time >= var(50)
+value = S800,2
+volume = 100
+persistent = 0
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = !time
+value = S800,3
+volume = 100
+channel = 2
+
+
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = time >= 15
+y = .15
+
+[State 0, VelAdd]
+type = VelAdd
+trigger1 = vel x > 0 && fvar(3) > 0
+trigger2 = vel x < 0 && fvar(3) < 0
+x = cond(fvar(3) < 0,.2,-.2)
+
+[State 0, VelSet]
+type = VelSet
+trigger1 = vel x < 0 && fvar(3) > 0
+trigger2 = vel x > 0 && fvar(3) < 0
+x = 0
+
+
+
+
+[State 1000, Sonic Wave]
+type = Helper
+triggerall = !Numhelper(1602)
+trigger1 = time >= var(50)
+name = "AirSonicWave"
+postype = P1
+pos = 13,0
+ownpal = 0
+size.xscale = 1.5
+size.yscale = 1.5
+stateno = 1602
+id = 1602
+
+[State 0, Rebound]
+type = ChangeState
+trigger1 = time >= var(50)
+trigger1 = 1 || helper(1602),cond(1,var(11) := 1,0) ;Assigns EX Var
+value = 1610
+ctrl = 0
+
+
+
+[State 0, Land]
+type = ChangeState
+trigger1 = pos y > -vel y
+value = 52
+ctrl = 1
 
 
 
 
 ;-----------------------------------------
-; Light Speed Dash Custom Fall State
+; Light Speed Attack Custom Fall State
 [Statedef 16000]
 type = A
 movetype = H
@@ -2174,12 +2919,6 @@ physics = N
 anim = IfElse(selfanimexist(5937),5937,IfElse(selfanimexist(5052),5052,5030))
 ctrl = 0
 facep2 = 1
-
-[State 0, NotHitBy]
-type = null;NotHitBy
-trigger1 = enemy,NumExplod(1400)>1
-value = SCA
-time = 1
 
 [state 3052] ;pos set if too close to the ground
 type = posadd
@@ -2190,7 +2929,7 @@ persistent = 0
 [State 4005, vel]
 type = velset
 trigger1 = AnimElemtime(2)=0
-x = -0.5
+x = -2
 y = -10
 persistent = 0
 
@@ -2226,23 +2965,7 @@ ctrl = 0
 velset = 0,0
 poweradd = 0
 sprpriority = 2
-facep2=1
-
-[State 0, AssertSpecial]
-type = AssertSpecial
-trigger1 = 1
-flag = noautoturn
-ignorehitpause = 1
-;persistent =
-
-
-[State 0, Turn]
-type = Turn
-trigger1 = !time
-ignorehitpause = 1
-;persistent =
-
-
+facep2 = 1
 
 [State 3124, ChangeAnim]
 type = ChangeAnim
@@ -2258,7 +2981,7 @@ value = 3103
 [State 3124, VelAdd]
 type = VelSet
 trigger1 = !Time ;(Pos Y < 0)
-x = cond(Facing,13,-13) ;10
+x = cond(Facing,-13,13) ;10
 y = -8;-5
 
 [State 0, Gravity]
@@ -2290,123 +3013,6 @@ trigger2 = FrontEdgeBodyDist <= 20
 value = 1323
 
 [State 3124, ChangeState]
-type = SelfState
-trigger1 = (Pos Y >= 0) && (Vel Y > 0)
-value = 5100
-
-; P2 Hit by EX Air Trick Attack (custom state)
-[Statedef 3126]
-type = A
-movetype = H
-physics = N ;A
-ctrl = 0
-velset = 0,0
-poweradd = 0
-sprpriority = 2
-facep2=1
-
-[State 0, AssertSpecial]
-type = AssertSpecial
-trigger1 = 1
-flag = noautoturn
-ignorehitpause = 1
-;persistent =
-
-
-[State 0, Turn]
-type = Turn
-trigger1 = !time
-ignorehitpause = 1
-;persistent =
-
-
-
-[State 3124, ChangeAnim]
-type = ChangeAnim
-trigger1 = !time && SelfAnimExist(5052)
-value = 5052
-
-[State 3124, ChangeAnim2]
-type = ChangeAnim2
-trigger1 = !time && !SelfAnimExist(5052)
-value = 3103
-
-
-[State 3124, VelAdd]
-type = VelSet
-trigger1 = !Time 
-x = cond(Facing,13,-13) 
-y = -8
-
-[State 0, Gravity]
-type = Gravity
-trigger1 = 1
-
-[State 3124, ChangeState]
-type = SelfState
-trigger1 = (Pos Y >= 0) && (Vel Y > 0)
-value = 5100
-
-
-;-------------------------------------------------------------------------------
-; P2 Hit by EX Air Trick Attack (custom state)
-[Statedef 3103]
-type = A
-movetype = H
-physics = N
-ctrl = 0
-velset = 0,0
-poweradd = 0
-sprpriority = 3
-facep2 = 1
-
-[State 3103, ChangeAnim]
-type = ChangeAnim
-trigger1 = !time && SelfAnimExist(5052)
-value = 5052
-
-[State 3103, ChangeAnim2]
-type = ChangeAnim2
-trigger1 = !time && !SelfAnimExist(5052)
-value = 3103
-
-[State 0, Gravity]
-type = Gravity
-trigger1 = 1
-
-[State 3103, VelAdd]
-type = VelSet
-trigger1 = !Time 
-x = -10
-y = -5
-
-
-
-[State 3103, No scroll]
-type = ScreenBound
-triggerall = Pos y < -15
-trigger1 = BackEdgeBodyDist < 65
-trigger2 = FrontEdgeBodyDist < 65
-value = 1
-movecamera = 0,1
-
-[State 3103, Hit wall]
-type = ChangeState
-triggerall = alive
-triggerall = Pos y < -15
-trigger1 = BackEdgeBodyDist <= 20
-trigger2 = FrontEdgeBodyDist <= 20
-value = 3104
-
-[State 1323, Wallbounce ko] 
-type = ChangeState
-triggerall = !alive
-triggerall = Pos y < -15
-trigger1 = BackEdgeBodyDist <= 20
-trigger2 = FrontEdgeBodyDist <= 20
-value = 1323
-
-[State 3103, ChangeState]
 type = SelfState
 trigger1 = (Pos Y >= 0) && (Vel Y > 0)
 value = 5100
@@ -2450,8 +3056,6 @@ x = 15 - BackEdgeBodyDist
 [State 3104, Stop moving]
 type = PosFreeze
 trigger1 = 1
-x = 1
-y = 1
 
 [State 3104, No scroll]
 type = ScreenBound
@@ -2518,6 +3122,107 @@ type = SelfState
 trigger1 = (Vel y > 0) && (Pos y >= 0)
 value = 5100
 
+;===========================================================================
+;LAND FROM BLOCKED HA
+;===========================================================================
+[Statedef 52000]
+type    = S
+physics = S
+ctrl = 0
+anim = 48
+velset = 0,0
+
+[State 52, 2]
+type = PosSet
+trigger1 = Time = 0
+y = 0
 
 
+[State 52, 4]
+type = ChangeState
+triggerall = command= "holddown"
+trigger1 = AnimTime = 0
+value = 11
+ctrl = 1
+
+[State 52, 4]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+
+;===========================================================================
+;HA Whiff Landing
+;===========================================================================
+[Statedef 52005]
+type    = S
+physics = S
+ctrl = 0
+anim = 46
+velset = 0,0
+
+[State 52, 2]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+
+[State 52, 4]
+type = ChangeState
+triggerall = command= "holddown"
+trigger1 = AnimTime = 0
+value = 11
+ctrl = 1
+
+[State 52, 4]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ctrl = 1
+
+
+
+;===========================================================================
+;Air Trick Whiff Landing
+;===========================================================================
+[Statedef 52010]
+type    = S
+physics = S
+ctrl = 0
+anim = 50
+velset = 0,0
+
+[State 52, 2]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+[State 52, 4]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 11+(!NumExplod(90000001) && !NumExplod(90000002) && !NumExplod(90000003))
+ctrl = 1
+
+;Sonic Wind Landing
+[Statedef 52015]
+type = S
+physics = S
+ctrl = 0 
+anim = 51
+velset = 0,0
+
+
+[State 52, 2]
+type = PosSet
+trigger1 = Time = 0
+y = 0
+
+
+[State 52, 4]
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 11+(!NumExplod(90000001) && !NumExplod(90000002) && !NumExplod(90000003))
+ctrl = 1
 
