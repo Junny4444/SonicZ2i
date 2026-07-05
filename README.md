@@ -1,3 +1,6 @@
+
+
+## Summary
 A Z2 Inspired character of Sonic The Hedgehog. His playstyle is that of a fast, mixup heavy rushdown character. 
 
 He has sprites by Seanalty (+ More) and almost everything one would expect for a Z2 character. Including unique finishers, winposes, and intros.
@@ -6,42 +9,42 @@ He has sprites by Seanalty (+ More) and almost everything one would expect for a
 
 
 
-Credits:
-Junny
+## Credits:
+# Junny
 Main author for Sonic Z2i.
-Team Z2
+# Team Z2
 Template Z2 and Z2 compatibility.
-Yoshin Pixels
+# Yoshin Pixels
 Code snippets, Ring Burst curl, Ring Burst FX, Finisher 1 FX, Finisher 1 end pose, Finisher 1 ball sprites, ring sprites, gem sprites, gem FX, gem throw animation, J.MK shading, MSHVSF Super BG used in Finisher 3, and 2LK sprite.
-Hypersonic
+# Hypersonic
 CVTW Sonic sprites.
-SeanAlty
+# SeanAlty
 Code snippets.
-Sega
+# Sega
 Sonic Advance FX and Sonic voices/SFX.
-Super Smash Bros. Brawl
+# Super Smash Bros. Brawl
 Additional sound effects.
-Unknown DeviantArt Artist
+# Unknown DeviantArt Artist
 Rocket sprites.
-Coldnfox
+# Coldnfox
 Balance feedback.
-HammerBro101
+# HammerBro101
 Rank icons.
-Nome De Gente
+# Nome De Gente
 J.MK lineart, Boom Kick sprites for all versions, 5HP sprite, 5HK sprite, Flip KO sprite, and Spin KO sprite.
-Denis
+# Denis
 Cliff portrait, mini portrait with help from HB and Plus, and win portrait.
-SonicHalo3435
+# SonicHalo3435
 Gotenks drawing.
-HB Productions
+# HB Productions
 Tails Tornado sprite, Sonic dashing sprite during Shadow outro, walk back sprite, run back sprite, and old Emo Bar.
-Ohmga Shironeko
+# Ohmga Shironeko
 New Emo Bar.
-Skipper
+# Skipper
 Shock sprite outlines.
-Funky Dunkerz
+# Funky Dunkerz
 Slight sprite edits to crouch.
-Modd
+# Modd
 Scary Sonic sprite.
-GadgetMcFly
+# GadgetMcFly
 Ring Burst animation, Piggy with help from HB, Rabbit, and Midnight Bliss.
