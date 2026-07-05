@@ -16,7 +16,7 @@ He has sprites by Seanalty (+ More) and almost everything one would expect for a
 
 ![](Git_assets/Shot2.png)
 
-![](Git_assets/Shot1.png)
+![The San Juan Mountains are beautiful](Git_assets/Shot2.png "San Juan Mountains")
 
 
 
