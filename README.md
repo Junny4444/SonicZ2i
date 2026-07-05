@@ -10,13 +10,13 @@ He has sprites by Seanalty (+ More) and almost everything one would expect for a
 # Screenshots
 
 
-![](Git_assets/Shot4.png)
+<img src="Git_assets/Shot4.png" width="640" height="480">
 
-![](Git_assets/Shot3.png)
+<img src="Git_assets/Shot3.png" width="640" height="480">
 
-![](Git_assets/Shot2.png)
+<img src="Git_assets/Shot1.png" width="640" height="480">
 
-![The San Juan Mountains are beautiful](Git_assets/Shot2.png "San Juan Mountains")
+<img src="Git_assets/Shot2.png" width="640" height="480">
 
 
 
