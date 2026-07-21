@@ -1022,12 +1022,6 @@ trigger1 = 1
 var(11) = 0
 persistent = 0
 
-[State 0, Width]
-type = Width
-trigger1 = 1
-value = 15,6
-ignorehitpause = 1
-
 [State 6100, EX snd]
 type = playsnd
 trigger1 = !time
